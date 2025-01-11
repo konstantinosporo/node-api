@@ -1,6 +1,6 @@
 # 🚀 Node.js API
 
-This repository contains a custom Node.js API deployed on Vercel.
+This repository contains a custom Node.js API deployed on Vercel. The primary motivation behind creating this API was to have a custom solution for local development. By using this API, I can avoid restrictions imposed by other services and have the flexibility to define and test all the entities I want in a local environment.
 
 ## 📦 Features
 
