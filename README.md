@@ -21,3 +21,13 @@ This repository contains a custom Node.js API deployed on Vercel. The primary mo
    git clone https://github.com/konstantinosporo/node-api.git
    cd node-api
 
+   ```
+
+2. **Find path with fs**:
+
+- const filepath = path.join(process.cwd(), `/db/users.json`);
+
+3. **Import cors and run**:
+
+- import { cors, runMiddleware } from '../middleware/middleware';
+

@@ -1,8 +1,8 @@
-import Cors from 'cors';
+import Cors from "cors";
 
 export const cors = new Cors({
-  methods: ['GET', 'POST'],
-  origin: 'http://localhost:4200',
+  methods: ["GET", "POST"],
+  origin: "http://localhost:4200",
 });
 
 export const runMiddleware = (req, res, fn) => {
@@ -14,4 +14,4 @@ export const runMiddleware = (req, res, fn) => {
       return resolve(result);
     });
   });
-}
+};

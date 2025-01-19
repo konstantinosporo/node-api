@@ -1,29 +1,27 @@
-import fs from 'fs';
-import path from 'path';
-import { cors, runMiddleware } from '../middleware/middleware';
-
-const filepath = path.join(process.cwd(), `/db/users.json`);
+import { neon } from "@neondatabase/serverless";
+import { cors, runMiddleware } from "../middleware/middleware";
 
 export default async function handler(req, res) {
   await runMiddleware(req, res, cors);
+  const sql = neon(process.env.DATABASE_URL);
+
   switch (req.method) {
-    case 'GET':
-      get(req, res);
+    case "GET":
+      get(req, res, sql);
       break;
-    case 'POST':
-      post(req, res);
+    case "POST":
+      post(req, res, sql);
       break;
     default:
-      return res.status(400).json({ message: 'Method is not supported.' });
+      return res.status(400).json({ message: "Method is not supported." });
   }
 }
 
-const get = (req, res) => {
+const get = async (req, res, sql) => {
   const { id } = req.query;
 
   try {
-    const data = fs.readFileSync(filepath, 'utf-8');
-    const users = JSON.parse(data);
+    const users = await sql`SELECT * FROM USERS`;
 
     if (id) {
       const user = users.find((user) => user.id === parseInt(id, 10));
@@ -39,28 +37,35 @@ const get = (req, res) => {
   } catch (error) {
     res.status(500).json({ error: `Could not fetch users: ${error.message}` });
   }
-}
+};
 
-const post = (req, res) => {
-  const { name, email } = req.body;
+const post = async (req, res, sql) => {
+  const { username, email, password } = req.body;
 
-  if (!name || !email) return res.status(400).json({ error: 'Name and email are required.' });
+  // Validate required fields
+  if (!username || !email || !password) {
+    return res
+      .status(400)
+      .json({ error: "Username, email, and password are required." });
+  }
 
   try {
-    const data = fs.readFileSync(filepath, 'utf-8');
-    const users = JSON.parse(data);
+    // Insert user into the database
+    const result = await sql`
+      INSERT INTO users (username, email, password)
+      VALUES (${username}, ${email}, ${password})
+      RETURNING id, username, email;
+    `;
 
-    const newUser = { id: users.length + 1, name, email };
-
-    users.push(newUser);
-
-    fs.writeFileSync(filepath, JSON.stringify(users, null, 2));
-
-    return res.status(200).json({ message: "User added successfully.", user: newUser });
-
+    // Respond with success
+    return res.status(200).json({
+      message: "User added successfully.",
+      user: result[0], // Include the newly created user details
+    });
   } catch (error) {
-    res.status(400).json({ error: `There was an issue adding the user: ${error.message}` });
+    // Handle database errors
+    return res.status(500).json({
+      error: `There was an issue adding the user: ${error.message}`,
+    });
   }
-}
-
-
+};
